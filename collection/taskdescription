@@ -2,6 +2,8 @@ provisionerId: aws-provisioner-v1
 workerType: tutorial
 created: '2018-01-30T15:16:38.451Z'
 deadline: '2018-01-30T18:16:38.451Z'
+routes:
+  - index.project.nss-nspr.canary-harvester.<date><time>
 payload:
   image: 'jallmann/canaryharvester:001'
   command:
