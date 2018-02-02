@@ -1,0 +1,11 @@
+{
+  "name": "canary-harvester-client",
+  "version": "0.0.1",
+  "description": "Client to list and download logs created by the canary harvester",
+  "main": "main.js",
+  "author": "Franziskus Kiefer<franziskuskiefer@gmail.com>",
+  "license": "MPL2.0",
+  "dependencies": {
+    "taskcluster-client": "^3.1.1"
+  }
+}
