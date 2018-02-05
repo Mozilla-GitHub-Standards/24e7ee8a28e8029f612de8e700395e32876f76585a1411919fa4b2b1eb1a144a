@@ -29,3 +29,4 @@ apt-get remove python-six # Native six module causes version conflict
 
 pip install --upgrade pip
 pip install tlscanary
+pip install taskcluster
