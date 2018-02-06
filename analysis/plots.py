@@ -27,9 +27,13 @@ def print_element_summary(log_path):
         print("Success: ", objects[i].get('success'))
         print("Rank: ", objects[i].get('rank'))
         print("Request time: ", request_time)
-        print("Signature Scheme: ",objects[i].get('response').get(
-                'result').get('info').get('ssl_status').get(
-                        'signatureSchemeName'))
+        signatureScheme = 'NA'
+        if(objects[i].get('response').get(
+                'result').get('info').get('ssl_status')):
+            signatureScheme = objects[i].get('response').get(
+                    'result').get('info').get('ssl_status').get(
+                    'signatureSchemeName')
+        print("Signature Scheme: ", signatureScheme)
         print("\n")
         if (objects[i].get('success') == False):
             fails += 1
@@ -62,7 +66,7 @@ def plot_response_times(log_path):
             ranks.append(objects[i].get('rank'))
 
 
-    plt.scatter(ranks, response_times)
+    plt.scatter(ranks, response_times, marker=".")
     plt.show()
 
 
@@ -112,10 +116,27 @@ def print_log_summary(log_path):
     print("Total Number of Elements: ", num_obj)
     print("Average Request time: ", rqt_avg)
         
+def get_element(log_path, j):
+    with open(log_path) as f:
+        loglines = f.readlines()
+
+    objects = []
+
+    for i in range(len(loglines)):
+        objects.append(json.loads(loglines[i]))
+        
+    return objects[j]
+    
+    
 logfile = "/home/jonasda/WorkCanary/Data/2018-02-06Z14-50-28/log"
-logfile = "/home/jonasda/.tlscanary/log/2018/01/2018-01-25Z11-41-32/log"
-print_element_summary(logfile)
-#plot_response_times(logfile)
+logfile2 = "/home/jonasda/WorkCanary/Data/2018-02-06Z16-28-31/log"
+
+#logfile = "/home/jonasda/.tlscanary/log/2018/01/2018-01-25Z11-41-32/log"
+#print_element_summary(logfile)
+plot_response_times(logfile)
+plot_response_times(logfile2)
 #plot_success(logfile)
 print_log_summary(logfile)
+print_log_summary(logfile2)
+
 
