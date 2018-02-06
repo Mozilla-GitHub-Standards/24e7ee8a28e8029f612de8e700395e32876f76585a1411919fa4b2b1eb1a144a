@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:latest
 MAINTAINER Jonas Allmann <jallmann@mozilla.com>
 
 RUN useradd -d /home/worker -s /bin/bash -m worker
