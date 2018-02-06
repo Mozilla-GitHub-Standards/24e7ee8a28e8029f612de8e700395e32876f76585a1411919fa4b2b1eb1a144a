@@ -33,4 +33,3 @@ dpkg-reconfigure locales
 
 pip install --upgrade pip
 pip install tlscanary
-pip install taskcluster

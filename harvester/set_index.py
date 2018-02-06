@@ -3,7 +3,7 @@
 import taskcluster
 import os
 
-index = taskcluster.Index({'baseUrl': "http://taskcluster/index"})
+index = taskcluster.Index({'baseUrl': 'http://taskcluster/index'})
 queue = taskcluster.Queue()
 
 # TESTING
