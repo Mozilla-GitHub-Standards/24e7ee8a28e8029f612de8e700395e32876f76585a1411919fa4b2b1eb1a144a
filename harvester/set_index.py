@@ -6,6 +6,10 @@ import os
 index = taskcluster.Index({'baseUrl': "http://taskcluster/index"})
 queue = taskcluster.Queue()
 
+# TESTING
+ns = index.listNamespaces('project.nss-nspr.canary-harvester-test', {})
+print('namespaces: ' + str(ns))
+
 now = taskcluster.fromNow("0 seconds").strftime('%Y-%m-%d-%H-%M-%S')
 taskId = os.environ["TASK_ID"]
 namespace = "index.project.nss-nspr.canary-harvester-test." + now
@@ -17,4 +21,4 @@ payload = {
     "data": {"desc": "canary harvester test"},
     "expires": task["expires"]
 }
-index.insertTask(namespace, payload)
+#index.insertTask(namespace, payload)
