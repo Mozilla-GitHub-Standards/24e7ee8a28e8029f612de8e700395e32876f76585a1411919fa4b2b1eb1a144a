@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Insert this run into the taskcluster index
-python /home/worker/bin/set_index.py
+python /home/worker/canary-harvester/harvester/set_index.py
 
 tlscanary scan -l 100
 
