@@ -5,9 +5,8 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
-def print_element_summary(log_path):
+#Imports a logfile and returns the array of JSON objects
+def import_logfile(log_path):
     with open(log_path) as f:
         loglines = f.readlines()
 
@@ -15,6 +14,12 @@ def print_element_summary(log_path):
 
     for i in range(len(loglines)):
         objects.append(json.loads(loglines[i]))
+        
+    return objects
+
+
+#Prints shortsummary for each element in the dataset
+def print_element_summary(objects):
 
     num_obj = len(objects)
     fails = 0
@@ -41,15 +46,8 @@ def print_element_summary(log_path):
     print('Total Objects: {}'.format(num_obj), 'Failed: ', fails)
 
 
-
-def plot_response_times(log_path):
-    with open(log_path) as f:
-        loglines = f.readlines()
-
-    objects = []
-
-    for i in range(len(loglines)):
-        objects.append(json.loads(loglines[i]))
+#Plots response times vs. rank 
+def plot_response_times(objects):
 
     num_obj = len(objects)
     fails = 0
@@ -69,15 +67,8 @@ def plot_response_times(log_path):
     plt.scatter(ranks, response_times, marker=".")
     plt.show()
 
-
-def plot_success(log_path):
-    with open(log_path) as f:
-        loglines = f.readlines()
-
-    objects = []
-
-    for i in range(len(loglines)):
-        objects.append(json.loads(loglines[i]))
+#Plots the number of successful/failed connections in a bar plot
+def plot_success(objects):
 
     num_obj = len(objects)
     succ = 0
@@ -90,17 +81,13 @@ def plot_success(log_path):
             fail+=1
 
     print('Total Objects: {}'.format(num_obj))
+    print('Successful conncetions: {} of {}.   {} %'.format(succ, num_obj, succ/num_obj*100))
     plt.bar(['success','failure'], [succ,fail])
     plt.show()
 
-def print_log_summary(log_path):
-    with open(log_path) as f:
-        loglines = f.readlines()
 
-    objects = []
-
-    for i in range(len(loglines)):
-        objects.append(json.loads(loglines[i]))
+#Prints overall statistics of the dataset.
+def print_log_summary(objects):
 
     num_obj = len(objects)
     rqt_sum = 0
@@ -115,28 +102,29 @@ def print_log_summary(log_path):
     rqt_avg = rqt_sum/num_obj
     print("Total Number of Elements: ", num_obj)
     print("Average Request time: ", rqt_avg)
-        
-def get_element(log_path, j):
-    with open(log_path) as f:
-        loglines = f.readlines()
 
-    objects = []
 
-    for i in range(len(loglines)):
-        objects.append(json.loads(loglines[i]))
-        
-    return objects[j]
+def plot_CAs(objects, detailed):
+
+    num_obj = len(objects)
+    ca_list = {}
     
+    for i in range(num_obj):
+        try:
+            IssuerName = objects[i].get('response').get('result').get(
+                    'info').get('ssl_status').get('serverCert').get('issuer').get('commonName')
+        except:
+            IssuerName = "none"
+        
+        if (detailed):
+            print("Host: ", objects[i].get('host'))
+            print("Server Cert Issuer: ", IssuerName)
+        if (IssuerName in ca_list):
+            ca_list[IssuerName] += 1
+        else:
+            ca_list[IssuerName] = 1
+        
     
-logfile = "/home/jonasda/WorkCanary/Data/2018-02-06Z14-50-28/log"
-logfile2 = "/home/jonasda/WorkCanary/Data/2018-02-06Z16-55-12/log"
-
-#logfile = "/home/jonasda/.tlscanary/log/2018/01/2018-01-25Z11-41-32/log"
-#print_element_summary(logfile)
-plot_response_times(logfile)
-plot_response_times(logfile2)
-#plot_success(logfile)
-#print_log_summary(logfile)
-print_log_summary(logfile2)
-
-
+    ca_names = ca_list.keys()
+    for k in ca_names:
+        print("Name: ", k, "  Number of Hosts: ", ca_list[k])
