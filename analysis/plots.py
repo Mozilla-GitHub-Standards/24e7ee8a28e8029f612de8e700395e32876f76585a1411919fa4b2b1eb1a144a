@@ -129,14 +129,14 @@ def get_element(log_path, j):
     
     
 logfile = "/home/jonasda/WorkCanary/Data/2018-02-06Z14-50-28/log"
-logfile2 = "/home/jonasda/WorkCanary/Data/2018-02-06Z16-28-31/log"
+logfile2 = "/home/jonasda/WorkCanary/Data/2018-02-06Z16-55-12/log"
 
 #logfile = "/home/jonasda/.tlscanary/log/2018/01/2018-01-25Z11-41-32/log"
 #print_element_summary(logfile)
 plot_response_times(logfile)
 plot_response_times(logfile2)
 #plot_success(logfile)
-print_log_summary(logfile)
+#print_log_summary(logfile)
 print_log_summary(logfile2)
 
 

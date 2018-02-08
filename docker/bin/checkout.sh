@@ -4,7 +4,7 @@
 for i in 0 2 5; do
     sleep $i
     # FIXME
-    git clone -b taskcluster-proxy-experiments https://github.com/mozilla/canary-harvester.git && break
+    git clone -b master https://github.com/mozilla/canary-harvester.git && break
     rm -rf canary-harvester
 done
 
