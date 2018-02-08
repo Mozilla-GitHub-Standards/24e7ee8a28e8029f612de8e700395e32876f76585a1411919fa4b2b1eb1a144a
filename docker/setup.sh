@@ -28,8 +28,5 @@ apt-get -y install virtualenv \
 
 apt-get remove python-six # Native six module causes version conflict
 
-locale-gen en_US.UTF-8
-dpkg-reconfigure locales
-
 pip install --upgrade pip
 pip install tlscanary
