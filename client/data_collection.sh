@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Retieves the URLs of all harvester runs so far.
+# Retrieves the URLs of all harvester runs so far.
 # Downloads and extracts the artifacts. 
 
 # IMPORTANT: Extracted logfiles are big, e.g. ~3.5 gB per run.

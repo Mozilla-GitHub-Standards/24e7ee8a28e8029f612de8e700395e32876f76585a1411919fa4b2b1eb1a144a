@@ -6,7 +6,7 @@
 timestamp=$(date +'%Y-%m-%d-%H-%M-%S')
 curl -v -X PUT "http://taskcluster/index/v1/task/project.nss-nspr.canary-harvester.${timestamp}" -H 'Content-Type: application/json' -d "{\"taskId\":\"${TASK_ID}\", \"rank\":10, \"data\":{}, \"expires\":\"2020-02-06T08:26:21.362Z\"}"
 
-tlscanary scan -l 100000 -f 0 -n 10
+tlscanary scan -l 100000 -f 0 -n 10 -r
 
 cd /home/worker/
 
