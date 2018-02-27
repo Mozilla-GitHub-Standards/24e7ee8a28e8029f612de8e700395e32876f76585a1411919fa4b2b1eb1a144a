@@ -3,7 +3,7 @@ var taskcluster = require('taskcluster-client');
 var index = new taskcluster.Index();
 
 var tasks = index.listTasks("project.nss-nspr.canary-harvester",
-                            {limit: 10});
+                            {limit: 100});
 
 tasks.then(function(result, reject){
     // console.log("tasks result: " + JSON.stringify(result));

@@ -4,21 +4,35 @@
 # Downloads and extracts the artifacts. 
 
 # IMPORTANT: Extracted logfiles are big, e.g. ~3.5 gB per run.
+if [[ "$1" = ""  ]] || [[ "$2" = ""  ]]
+then
+  echo "Please enter Start AND End Index for URLs to download."
+  echo "  ./data_collection [first URL #] [last URL #]"
+  exit 1
+fi
 
 node main.js > urls.txt
 
 sed -i '/got tasks.../d' urls.txt
 WORKDIR=$(pwd)
-mkdir $WORKDIR/data
+if ! [[ -e "$WORKDIR/data" ]]
+then
+  mkdir $WORKDIR/data
+fi
 
 COUNT=0
+MIN=$(($1-1))
+MAX=$2
 for URL in $(cat urls.txt)
 do
-  
+  if [[ $COUNT -gt $MAX ]]
+  then
+    break
+  fi
   # Starts at third URL because first two are test runs without artifacts.
   # TODO: Choice of runs to download should be made variable.
   
-  if [ $COUNT -gt 1 ]
+  if [[ $COUNT -gt $MIN ]] 
   then
     echo "$URL"
     mkdir tmp
@@ -28,8 +42,7 @@ do
     tar -xf public%2Fcanarylog.tar
     cd .tlscanary/log/*/*/*
     bzip2 -d log.bz2
-    cd ..
-    mv ./* $WORKDIR/data
+    mv $WORKDIR/temp/.tlscanary/log/*/* $WORKDIR/data
     cd $WORKDIR
     rm -rf tmp
   fi
