@@ -38,3 +38,5 @@ do
 done
 
 rm urls.txt
+
+python database.py $WORKDIR/data/
