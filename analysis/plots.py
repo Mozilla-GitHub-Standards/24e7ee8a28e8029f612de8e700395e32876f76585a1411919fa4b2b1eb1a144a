@@ -2,14 +2,17 @@
 
 import json
 #import matplotlib as mp
-import numpy as np
+#import numpy as np
 import matplotlib.pyplot as plt
 
 global ITEMLIMIT
 ITEMLIMIT = 999999
 
-#Imports a logfile and returns the array of JSON objects
-def import_logfile(log_path, strip_certificates):
+# Imports a logfile and returns the array of JSON objects
+def import_logfile(log_path, **kwargs):
+    
+    strip_certs = kwargs.get('strip_certs', None)
+    
     with open(log_path) as f:
         loglines = f.readlines()
 
@@ -17,14 +20,38 @@ def import_logfile(log_path, strip_certificates):
 
     for i in range(len(loglines)):
         objects.append(json.loads(loglines[i]))
-        if(strip_certificates):
+        if(strip_certs):
             objects[i]['response']['result']['info']['certificate_chain'] = []
         
         
     return objects
 
 
-#Prints shortsummary for each element in the dataset
+# Imports a logfile and the log metadata from a given folder.
+# Returns the array of JSON objects and a single JSON object containing metadata.
+# Optionally removes certificate data from the objects to reduce memory usage.
+def import_logfolder(log_path, **kwargs):
+    
+    strip_certs = kwargs.get('strip_certs', None)
+    
+    with open(log_path+"/meta") as m:
+        meta = json.loads(m.read())
+    
+    with open(log_path+"/log") as f:
+        loglines = f.readlines()
+
+    objects = []
+
+    for i in range(len(loglines)):
+        objects.append(json.loads(loglines[i]))
+        if(strip_certs):
+            objects[i]['response']['result']['info']['certificate_chain'] = []
+        
+    return objects, meta
+
+
+# Prints short summary for each element in the dataset
+# Not recommended for large datasets.
 def print_element_summary(objects):
 
     num_obj = len(objects)
@@ -39,8 +66,8 @@ def print_element_summary(objects):
         print("Rank: ", objects[i]['rank'])
         print("Request time: ", request_time)
         signatureScheme = 'NA'
-        if(objects[i]['response'][
-                'result']['info']['ssl_status']):
+        if('ssl_status' in objects[i]['response'][
+                'result']['info'].keys()):
             signatureScheme = objects[i]['response'][
                     'result']['info']['ssl_status']['signatureSchemeName']
         print("Signature Scheme: ", signatureScheme)
@@ -51,9 +78,11 @@ def print_element_summary(objects):
     print('Total Objects: {}'.format(num_obj), 'Failed: ', fails)
 
 
-#Plots response times vs. rank 
-def plot_response_times(objects):
+# Plots response times vs. rank 
+def plot_response_times(objects, **kwargs):
 
+    meta = kwargs.get('meta', None)
+    
     num_obj = len(objects)
     fails = 0
     response_times = []
@@ -70,10 +99,15 @@ def plot_response_times(objects):
 
 
     plt.scatter(ranks, response_times, marker=".")
+    if meta:
+        plt.title(meta['run_finish_time'][0:10])
     plt.show()
 
+
 #Plots the number of successful/failed connections in a bar plot
-def plot_success(objects):
+def plot_success(objects, **kwargs):
+    
+    meta = kwargs.get('meta', None)
 
     num_obj = len(objects)
     succ = 0
@@ -88,12 +122,16 @@ def plot_success(objects):
     print('Total Objects: {}'.format(num_obj))
     print('Successful conncetions: {} of {}.   {} %'.format(succ, num_obj, succ/num_obj*100))
     plt.bar(['success','failure'], [succ,fail])
+    if meta:
+        plt.title(meta['run_finish_time'][0:10])
     plt.show()
 
 
 #Prints overall statistics of the dataset.
-def print_log_summary(objects):
+def print_log_summary(objects, **kwargs):
 
+    meta = kwargs.get('meta', None)
+    
     num_obj = len(objects)
     rqt_sum = 0
     
@@ -105,12 +143,20 @@ def print_log_summary(objects):
         
         
     rqt_avg = rqt_sum/num_obj
+    if meta:
+        print("Run date: ", meta['run_finish_time'][0:10])
     print("Total Number of Elements: ", num_obj)
     print("Average Request time: ", rqt_avg)
 
 
-def plot_CAs(objects, detailed):
-
+def plot_CAs(objects, **kwargs):
+    
+    detailed = kwargs.get('detailed', False)
+    meta = kwargs.get('meta', None)
+    
+    if meta:
+        print(meta['run_finish_time'][0:10])
+        
     num_obj = len(objects)
     ca_list = {}
     
@@ -130,12 +176,16 @@ def plot_CAs(objects, detailed):
             ca_list[IssuerName] = 1
         
     
-    ca_names = ca_list.keys()
+    ca_names = sorted(ca_list, key=ca_list.get, reverse=True)
     for k in ca_names:
-        print("Name: ", k, "  Number of Hosts: ", ca_list[k])
-        
-#Plots the response time difference for every host between two datasets. 
-def compare_response_times(objects_a, objects_b):
+        print("Name: ", k, "\nNumber of Hosts: ", ca_list[k])
+
+
+# Plots the response time difference for every host between two datasets. 
+def compare_response_times(objects_a, objects_b, **kwargs):
+    
+    meta = kwargs.get('meta', None)
+    
     num_obj_a = len(objects_a)
     num_obj_b = len(objects_b)
     
@@ -200,11 +250,17 @@ def compare_response_times(objects_a, objects_b):
             
     plt.scatter(ranks, times, marker=".")
     plt.scatter(ranks2, times2, marker=".")
-
+    if meta:
+        plt.title(meta['run_finish_time'][0:10])
     plt.show()
-        
-        
-def compare_failures(objects_a, objects_b):
+    
+    
+# Compares connection failures between two datasets.
+def compare_failures(objects_a, objects_b, **kwargs):
+    
+    meta = kwargs.get('meta', None)
+    meta2 = kwargs.get('meta2', None)
+    
     num_obj_a = len(objects_a)
     num_obj_b = len(objects_b)
     
@@ -259,18 +315,26 @@ def compare_failures(objects_a, objects_b):
     print("Summary: ", succ, " repeatedly successful.  ", new_succ, " newly successful.")
     print("         ", fail, " repeatedly failed.      ", new_fail, " newly failed.  ")
     plt.scatter(ranks, compare_success, marker=".")
+    if (meta and meta2):
+        plt.title(meta['run_finish_time'][0:10] + " vs. " + meta2['run_finish_time'][0:10])
     plt.show()
+
+
+def list_error_codes(objects, **kwargs):
     
+    meta = kwargs.get('meta', None)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    num_obj = len(objects)
+    c = 0
+    for i in range(num_obj):
+        if (objects[i]['success'] == False):
+            if (objects[i]['response']['result']['origin'] == "error_handler"):
+                print("\n", objects[i])
+                #print(i, " Host: ", objects[i]['host'])
+                #print("Success: ", objects[i]['success'])
+                #print("Rank: ", objects[i]['rank'])
+                #print(objects[i]['response']['result']['info']['raw_error'])
+            c +=1
+        if (c > 25):
+            break
+            
