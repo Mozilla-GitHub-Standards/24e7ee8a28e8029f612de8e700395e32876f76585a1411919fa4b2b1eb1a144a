@@ -34,13 +34,19 @@ try:
 except:
     print("Usage: Sepcify root directory.")
     exit
+    
+if (source_folder[-1:] != "/"):
+    source_folder += "/"
 
 #source_folder = "/home/jonasda/WorkCanary/canary-harvester/client/data/"
 #datetime = "2018-03-08Z00-05-24"
 
 db_folder = source_folder + "database"
 
-date_folders = os.listdir(source_folder)
+log_folders = os.listdir(source_folder)
+
+if ("database" in log_folders):
+    log_folders.remove("database")
 
 if not os.path.exists(db_folder):
     os.makedirs(db_folder)
@@ -49,16 +55,17 @@ db = sqlite3.connect(db_folder + "/logs.db")
 
 c = db.cursor()
 
-for j in range(len(date_folders)):
-    datetime = date_folders[j]
-    data, meta = import_logfolder(source_folder + datetime)
-    print("Processing " + datetime)
+for j in range(len(log_folders)):
+    datetime = log_folders[j]
     
-    #c.execute('''DROP TABLE IF EXISTS log''')
+    print("Reading " + datetime + "...")
+    data, meta = import_logfolder(source_folder + datetime)
+    
+    print("Writing " + datetime + " to DB...")
     
     c.execute('''CREATE TABLE IF NOT EXISTS log ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "host" TEXT, "rank" INTEGER, "response_time" REAL, "success" TEXT,
-                                                 "signature_scheme" TEXT, "error_class" TEXT, "raw_error" TEXT,
-                                                 "CA_name" TEXT, "date" TEXT)''')
+                                                 "signature_scheme" TEXT, "cipher_name" TEXT, "protocol_version" TEXT, "cert_untrusted" TEXT, "error_class" TEXT, 
+                                                 "raw_error" TEXT, "short_error" TEXT, "CA_name" TEXT, "date" TEXT)''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS testrun ("date" TEXT PRIMARY KEY, "max_timeout" INTEGER, "scans_per_host" INTEGER, "version" TEXT,
                                                  "build_ID" TEXT, "nspr_version" TEXT, "nss_version" TEXT,
@@ -86,7 +93,19 @@ for j in range(len(date_folders)):
         except:
             signature_scheme = 'NA'
         try:
-            error_class = data[i]['response']['result']['info']['error_class'].encode('UTF-8')
+            cipher_name = data[i]['response']['result']['info']['ssl_status']['cipherName'].encode('UTF-8')
+        except:
+            cipher_name = 'NA'
+        try:
+            protocol_version = data[i]['response']['result']['info']['ssl_status']['protocolVersion']
+        except:
+            protocol_version = 'NA'
+        try:
+            cert_untrusted = data[i]['response']['result']['info']['ssl_status']['isUntrusted']
+        except:
+            cert_untrusted = 'NA'
+        try:
+            error_class = data[i]['response']['result']['info']['error_class']
         except:
             error_class = 'NA'
         try:
@@ -94,16 +113,21 @@ for j in range(len(date_folders)):
         except:
             raw_error = 'NA'
         try:
-            CA_name = data[i]['response']['result']['info']['ssl_status']['serverCert']['issuer']['commonName'].replace("'", "").encode('UTF-8')
+            short_error = data[i]['response']['result']['info']['short_error_message'].encode('UTF-8')
+        except:
+            short_error = 'NA'
+        try:
+            CA_name = data[i]['response']['result']['info']['ssl_status']['serverCert']['issuerCommonName'].replace("'", "").encode('UTF-8')
         except:
             CA_name = 'NA'
         date = meta['run_finish_time'][:10]   
         
-        command = "INSERT INTO log ('host', 'rank', 'response_time', 'success', 'signature_scheme', \
-                            'error_class', 'raw_error', 'CA_name', 'date') \
-                            VALUES ('{0}',{1},{2},'{3}','{4}','{5}','{6}','{7}','{8}')".format(host, rank, 
-                                          request_time, success, signature_scheme, error_class, raw_error, CA_name, date)
-        #print(command)
+        command = "INSERT INTO log ('host', 'rank', 'response_time', 'success', 'signature_scheme', 'cipher_name', 'protocol_version', \
+                            'cert_untrusted', 'error_class', 'raw_error','short_error', 'CA_name', 'date') \
+                            VALUES ('{0}',{1},{2},'{3}','{4}','{5}','{6}','{7}','{8}', '{9}', '{10}', '{11}', '{12}')".format(host, rank, 
+                                          request_time, success, signature_scheme, cipher_name, protocol_version, cert_untrusted, error_class,
+                                          raw_error, short_error, CA_name, date)
+
         try:
             c.execute(command)
         except:
