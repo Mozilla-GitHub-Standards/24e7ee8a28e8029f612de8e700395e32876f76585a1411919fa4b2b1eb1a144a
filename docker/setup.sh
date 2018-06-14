@@ -26,7 +26,7 @@ apt-get -y install \
 apt-get -y install virtualenv \
 	|| apt-get -y install python-virtualenv
 
-apt-get remove python-six # Native six module causes version conflict
+apt-get remove python-six -y # Native six module causes version conflict
 
-pip install --upgrade pip
+#pip install --user --upgrade pip
 pip install tlscanary
