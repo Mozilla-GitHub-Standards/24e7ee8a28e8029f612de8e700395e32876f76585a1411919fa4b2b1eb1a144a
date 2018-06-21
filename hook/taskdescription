@@ -5,7 +5,7 @@ deadline: '2018-01-30T18:16:38.451Z'
 routes:
   - index.project.nss-nspr.canary-harvester.<date><time>
 payload:
-  image: 'jallmann/canaryharvester:001'
+  image: 'nssdev/canaryharvester:001'
   command:
     - /bin/bash
     - '-c'
@@ -13,7 +13,7 @@ payload:
   maxRunTime: 600
   artifacts:
     public:
-      expires: '2018-02-05T14:46:34.575Z'
+      expires: '2020-02-06T08:26:21.362Z'
       type: directory
       path: /home/worker/log
 metadata:
